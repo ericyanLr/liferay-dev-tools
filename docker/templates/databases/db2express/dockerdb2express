@@ -32,7 +32,7 @@ dockerdb2express() {
 				fi;;
 			'db_drop')
 				if [ -n "$2" ] ; then
-					dockercontainer "exec" ${containername} su -c "db2 DROP DB $2" - db2inst1
+					dockercontainer "exec" ${containername} su -c "db2 force application all; sleep 5; db2 DROP DB $2" - db2inst1
 					return
 				fi;;
 			'db_get_cfg')
