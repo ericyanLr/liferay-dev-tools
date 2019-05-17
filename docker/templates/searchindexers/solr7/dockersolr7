@@ -1,0 +1,102 @@
+#!/bin/bash
+#
+# docker template for Solr 7
+# host: localhost
+# port: 8983 (configured via -p 8983:8983)
+# directory: ./mycores/liferay (configured via -v ${scriptpath_escaped}/mycores/liferay:/myconfig)
+#   can be used for configuring Solr
+
+#Core Function
+dockersolr7() {
+	# @description create a docker container for Solr
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
+	
+	local dockerimage="solr:7-alpine"
+	local containername="ldt_solr7"
+	local containercmd="solr-precreate liferay /myconfig"
+	local containeroptions=(
+		"-v ${scriptpath_escaped}/mycores/liferay:/myconfig"
+		"-p 8983:8983"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
+	fi
+}
+
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#External Functions
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+dockertemplate() {
+	# @description reference dockertemplate to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockertemplate"
+		return 1
+	fi
+}
+
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	if [ "${LDT_DEBUG}" == "1" ]; then
+		verify_external_functions
+	fi
+	
+	dockersolr7 "${@}"
+
+	exit $?
+fi
