@@ -23,6 +23,24 @@ dockermysql() {
 
 	if [ -n "$1" ]; then
 		case "$1" in
+			'dbCreate')
+				if [ -n "$2" ] ; then
+				  dockercontainer "exec" ${containername} mysql -uroot -ptest -e "create database $2 CHARACTER SET utf8;"
+
+				  return
+				fi;;
+			'dbDrop')
+				if [ -n "$2" ] ; then
+				  dockercontainer "exec" ${containername} mysql -uroot -ptest -e "drop database $2;"
+				  return
+				fi;;
+			'dbRecreate')
+				if [ -n "$2" ]; then
+				  dockermysql 'dbDrop' "$2"
+				  dockermysql 'dbCreate' "$2"
+
+				  return
+				fi;;
 			'recreate'|'run'|'start')
 				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
 			*)
