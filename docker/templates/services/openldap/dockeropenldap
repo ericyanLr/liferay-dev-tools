@@ -42,7 +42,7 @@ dockeropenldap() {
 		"-e LDAP_ADMIN_PASSWORD=admin"
 		"-e LDAP_CONFIG_PASSWORD=admin"
 		#"-e LDAP_LOG_LEVEL=-1" # Show all LDAP debug messages in logs
-		"-p 389:389"
+		"-p 10389:389"
 	)
 
 	if [ -n "$1" ]; then
