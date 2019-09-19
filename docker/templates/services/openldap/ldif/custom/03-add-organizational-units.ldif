@@ -1,0 +1,13 @@
+# Define people organizational unit
+
+dn: ou=people,{{ LDAP_BASE_DN }}
+changeType: add
+objectClass: organizationalUnit
+ou: people
+
+# Define groups organizational unit
+
+dn: ou=groups,{{ LDAP_BASE_DN }}
+changeType: add
+objectClass: organizationalUnit
+ou: Groups

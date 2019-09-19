@@ -4,15 +4,24 @@
 # host: localhost
 # port: 10389 (configured via -p 10389:389)
 # 
-# bind DN/User: cn=admin,dc=example,dc=org (configured via -e SLAPD_DOMAIN=example.org + default user: admin)
-# bind Password: admin (configured via -e SLAPD_PASSWORD=admin)
+# bind DN/User: cn=admin,dc=example,dc=org (configured via -e LDAP_DOMAIN=example.org + default user: admin)
+# bind Password: admin (configured via -e LDAP_ADMIN_PASSWORD=admin)
 #
 # Preconfigured for Liferay
-#     Prepopulate using ldif files in folder: prepopulate
+#     Configure and prepopulate using ldif files in folder: ldif/custom
 # ldif files:
-#     ./prepopulate/prepopulate.ldif
-#         Generates a password policy
-#         Generates test users
+#     ./ldif/custom/01-enable-password-policies.ldif
+#         Enable OpenLDAP Password Policy
+#     ./ldif/custom/02-add-password-policy.ldif
+# 				Create a password policy
+#     ./ldif/custom/03-add-organizational-units.ldif
+#					Create organization units to contain: users and groups
+#     ./ldif/custom/04-add-users.ldif
+#					Create test users
+# 		./ldif/custom/05-add-groups-with-users.ldif
+#					Add test users to specific groups
+# 		./ldif/custom/06-modify-acl.ldif
+#					Can be un-commented to enable anonymous users to read entries
 
 #Core Function
 dockeropenldap() {
@@ -23,17 +32,17 @@ dockeropenldap() {
 
 	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 
-	local dockerimage="dinkel/openldap"
+	local dockerimage="osixia/openldap:1.2.5"
 	local containername="ldt_openldap"
-	local containercmd=""
+	local containercmd="--copy-service"
 	local containeroptions=(
-		"-v ${scriptpath_escaped}/prepopulate:/etc/ldap.dist/prepopulate"
-		"-e SLAPD_PASSWORD=admin"
-		"-e SLAPD_CONFIG_PASSWORD=admin"
-		"-e SLAPD_DOMAIN=example.org"
-		"-e SLAPD_ADDITIONAL_SCHEMAS=ppolicy"
-		"-e SLAPD_ADDITIONAL_MODULES=ppolicy"
-		"-p 10389:389"
+		"-v ${scriptpath_escaped}/ldif/custom:/container/service/slapd/assets/config/bootstrap/ldif/custom"
+		"-e LDAP_ORGANISATION=example.org"
+		"-e LDAP_DOMAIN=example.org"
+		"-e LDAP_ADMIN_PASSWORD=admin"
+		"-e LDAP_CONFIG_PASSWORD=admin"
+		#"-e LDAP_LOG_LEVEL=-1" # Show all LDAP debug messages in logs
+		"-p 389:389"
 	)
 
 	if [ -n "$1" ]; then

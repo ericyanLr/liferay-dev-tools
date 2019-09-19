@@ -1,0 +1,19 @@
+# Create admins group and add administrater user
+
+dn: cn=admins,ou=groups,{{ LDAP_BASE_DN }}
+changeType: add
+objectClass: groupOfUniqueNames
+cn: admins
+description: Administrator users
+uniqueMember: uid=test,ou=people,dc=example,dc=org
+
+# Create testusers group and add users
+
+dn: cn=testusers,ou=groups,{{ LDAP_BASE_DN }}
+changeType: add
+objectClass: groupOfUniqueNames
+cn: testusers
+description: Administrator users
+uniqueMember: uid=test,ou=people,dc=example,dc=org
+uniqueMember: uid=test1,ou=people,dc=example,dc=org
+uniqueMember: uid=test2,ou=people,dc=example,dc=org

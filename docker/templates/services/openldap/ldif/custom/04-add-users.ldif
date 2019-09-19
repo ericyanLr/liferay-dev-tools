@@ -1,0 +1,45 @@
+# Create the test administrator user
+
+dn: uid=test,ou=people,{{ LDAP_BASE_DN }}
+changeType: add
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Test
+sn: Test
+cn: test
+uid: test
+telephonenumber: 123-4567
+userpassword: test
+mail: test@liferay.com
+
+# Create other test users
+
+dn: uid=test1,ou=people,{{ LDAP_BASE_DN }}
+changeType: add
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: One
+sn: One
+cn: test1
+uid: test1
+telephonenumber: 123-4567
+userpassword: test
+mail: test1@liferay.com
+
+dn: uid=test2,ou=people,{{ LDAP_BASE_DN }}
+changeType: add
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Two
+sn: Two
+cn: test2
+uid: test2
+telephonenumber: 123-4567
+userpassword: test
+mail: test2@liferay.com
