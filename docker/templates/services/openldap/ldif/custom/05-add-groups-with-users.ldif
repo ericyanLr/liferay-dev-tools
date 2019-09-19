@@ -13,7 +13,7 @@ dn: cn=testusers,ou=groups,{{ LDAP_BASE_DN }}
 changeType: add
 objectClass: groupOfUniqueNames
 cn: testusers
-description: Administrator users
+description: Test users
 uniqueMember: uid=test,ou=people,dc=example,dc=org
 uniqueMember: uid=test1,ou=people,dc=example,dc=org
 uniqueMember: uid=test2,ou=people,dc=example,dc=org
