@@ -13,48 +13,48 @@
 #     ./ldif/custom/01-enable-password-policies.ldif
 #         Enable OpenLDAP Password Policy
 #     ./ldif/custom/02-add-password-policy.ldif
-# 				Create a password policy
+#         Create a password policy
 #     ./ldif/custom/03-add-organizational-units.ldif
-#					Create organization units to contain: users and groups
+#          Create organization units to contain: users and groups
 #     ./ldif/custom/04-add-users.ldif
-#					Create test users
-# 		./ldif/custom/05-add-groups-with-users.ldif
-#					Add test users to specific groups
-# 		./ldif/custom/06-modify-acl.ldif
-#					Can be un-commented to enable anonymous users to read entries
+#          Create test users
+#     ./ldif/custom/05-add-groups-with-users.ldif
+#          Add test users to specific groups
+#     ./ldif/custom/06-modify-acl.ldif
+#          Can be un-commented to enable anonymous users to read entries
 
 #Core Function
 dockeropenldap() {
-	# @description create a docker container for OpenLDAP
-	# @param $1 available commands listed in usages
-	# @param $... additional parameters based on inital command used
-	# @output varies, depending on the command used
+  # @description create a docker container for OpenLDAP
+  # @param $1 available commands listed in usages
+  # @param $... additional parameters based on inital command used
+  # @output varies, depending on the command used
 
-	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
+  local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 
-	local dockerimage="osixia/openldap:1.2.5"
-	local containername="ldt_openldap"
-	local containercmd="--copy-service"
-	local containeroptions=(
-		"-v ${scriptpath_escaped}/ldif/custom:/container/service/slapd/assets/config/bootstrap/ldif/custom"
-		"-e LDAP_ORGANISATION=example.org"
-		"-e LDAP_DOMAIN=example.org"
-		"-e LDAP_ADMIN_PASSWORD=admin"
-		"-e LDAP_CONFIG_PASSWORD=admin"
-		#"-e LDAP_LOG_LEVEL=-1" # Show all LDAP debug messages in logs
-		"-p 10389:389"
-	)
+  local dockerimage="osixia/openldap:1.2.5"
+  local containername="ldt_openldap"
+  local containercmd="--copy-service"
+  local containeroptions=(
+    "-v ${scriptpath_escaped}/ldif/custom:/container/service/slapd/assets/config/bootstrap/ldif/custom"
+    "-e LDAP_ORGANISATION=example.org"
+    "-e LDAP_DOMAIN=example.org"
+    "-e LDAP_ADMIN_PASSWORD=admin"
+    "-e LDAP_CONFIG_PASSWORD=admin"
+    #"-e LDAP_LOG_LEVEL=-1" # Show all LDAP debug messages in logs
+    "-p 10389:389"
+  )
 
-	if [ -n "$1" ]; then
-		case "$1" in
-			'recreate'|'run'|'start')
-				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
-			*)
-				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
-		esac
-	else
-		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
-	fi
+  if [ -n "$1" ]; then
+    case "$1" in
+      'recreate'|'run'|'start')
+        dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+      *)
+        dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+    esac
+  else
+    dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
+  fi
 }
 
 #Global Variables
@@ -62,63 +62,63 @@ ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-to
 
 #External Functions
 dockercontainer() {
-	# @description reference dockercontainer to utilize it's functions
-	# @output None
+  # @description reference dockercontainer to utilize it's functions
+  # @output None
 
-	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
+  local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
-	if [ -f "${scriptpath}" ]; then
-		"${scriptpath}" "$@"
-	else
-		echo "Error: Could not load dockercontainer"
-		return 1
-	fi
+  if [ -f "${scriptpath}" ]; then
+    "${scriptpath}" "$@"
+  else
+    echo "Error: Could not load dockercontainer"
+    return 1
+  fi
 }
 
 dockertemplate() {
-	# @description reference dockertemplate to utilize it's functions
-	# @output None
+  # @description reference dockertemplate to utilize it's functions
+  # @output None
 
-	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
+  local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
-	if [ -f "${scriptpath}" ]; then
-		"${scriptpath}" "$@"
-	else
-		echo "Error: Could not load dockertemplate"
-		return 1
-	fi
+  if [ -f "${scriptpath}" ]; then
+    "${scriptpath}" "$@"
+  else
+    echo "Error: Could not load dockertemplate"
+    return 1
+  fi
 }
 
 dockerutil() {
-	# @description reference dockerutil to utilize it's functions
-	# @output None
+  # @description reference dockerutil to utilize it's functions
+  # @output None
 
-	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
+  local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
-	if [ -f "${scriptpath}" ]; then
-		"${scriptpath}" "$@"
-	else
-		echo "Error: Could not load dockerutil"
-		return 1
-	fi
+  if [ -f "${scriptpath}" ]; then
+    "${scriptpath}" "$@"
+  else
+    echo "Error: Could not load dockerutil"
+    return 1
+  fi
 }
 
 verify_external_functions() {
-	# @description check if external functions can be loaded, or else exit the script
-	# @output None
+  # @description check if external functions can be loaded, or else exit the script
+  # @output None
 
-	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
-	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
-	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+  if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+  if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
+  if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
 }
 
 #Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
-	if [ "${LDT_DEBUG}" == "1" ]; then
-		verify_external_functions
-	fi
-	
-	dockeropenldap "${@}"
+  if [ "${LDT_DEBUG}" == "1" ]; then
+    verify_external_functions
+  fi
+  
+  dockeropenldap "${@}"
 
-	exit $?
+  exit $?
 fi
