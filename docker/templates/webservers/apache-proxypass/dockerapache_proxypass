@@ -5,10 +5,10 @@
 # port: 443 (configured via -p 443:443)
 # reverse proxy:
 #    ProxyPass properties in ./conf/extra/httpd-vhosts.conf:
-#        ProxyPass /liferay ajp://172.17.0.1:8009 
-#        ProxyPassReverse /liferay ajp://172.17.0.1:8009
+#        ProxyPass /liferay http://host.docker.internal:8080
+#        ProxyPassReverse /liferay http://host.docker.internal:8080
 #
-#        (by default, 172.17.0.1 should route to your localhost:8009)
+#        (by default, host.docker.internal should route to your localhost)
 #    For Liferay, add the following portal properties (modify accordingly):
 #        web.server.https.port=443
 #        web.server.protocol=https
