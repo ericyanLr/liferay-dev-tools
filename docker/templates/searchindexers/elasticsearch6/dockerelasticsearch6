@@ -36,6 +36,7 @@ dockerelasticsearch6() {
 		"-e cluster.name=LiferayElasticsearchCluster"
 		"-e network.host=_local_"
 		"-e network.bind_host=0.0.0.0"
+		"-e network.publish_host=0.0.0.0"
 		"-e http.cors.enabled=true"
 		"-e http.cors.allow-origin=*"
 		"-e http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,X-User"
