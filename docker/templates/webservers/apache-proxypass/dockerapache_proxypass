@@ -39,6 +39,7 @@ dockerapache_proxypass() {
 		"-v ${scriptpath_escaped}/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
 		"-v ${scriptpath_escaped}/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
 		"-v ${scriptpath_escaped}/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
+		"-p 80:80"
 		"-p 443:443"
 	)
 
