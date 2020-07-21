@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+# Note: The DB2 Express image is no longer available on Dockerhub
+# Suggestion: Use the DB2 docker template instead
+#
 # docker template for DB2 Express
 # Username: db2inst1
 # Password: test (configured via -e DB2INST1_PASSWORD=test)
@@ -14,13 +17,16 @@ dockerdb2express() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local dockerimage="ibmcom/db2express-c:10.5.0.5-3.10.0"
+	local dockerimage="ibmcom/db2:11.5.4.0"
 	local containername="ldt_db2express"
-	local containercmd="db2start"
+	local containercmd=""
 	local containeroptions=(
 		"-e DB2INST1_PASSWORD=test"
+		"-e DBNAME=testdb"
 		"-e LICENSE=accept"
 		"-p 50000:50000"
+		"--cap-add IPC_LOCK"
+		"--cap-add IPC_OWNER"
 	)
 
 	if [ -n "$1" ]; then
