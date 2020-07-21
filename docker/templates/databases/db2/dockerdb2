@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# docker template for DB2
+# Username: db2inst1
+# Password: test (configured via -e DB2INST1_PASSWORD=test)
+# Hostname: localhost
+# Port: 50000 (configured via -p 50000:50000)
+#
+# Default database: testdb (configured via -e DBNAME=testdb)
+# DB2(LUW) URL Example: jdbc:db2://localhost:50000/testdb
+
+#Core Function
+dockerdb2() {
+	# @description create a docker container for DB2
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="ibmcom/db2:11.5.4.0"
+	local containername="ldt_db2"
+	local containercmd=""
+	local containeroptions=(
+		"-e DB2INST1_PASSWORD=test"
+		"-e DBNAME=testdb"
+		"-e LICENSE=accept"
+		"-p 50000:50000"
+		"--cap-add IPC_LOCK"
+		"--cap-add IPC_OWNER"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'db_create')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "db2 CREATE DB $2 using codeset UTF-8 territory us PAGESIZE 32768" - db2inst1
+					return
+				fi;;
+			'db_drop')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "db2 force application all; sleep 5; db2 DROP DB $2" - db2inst1
+					return
+				fi;;
+			'db_get_cfg')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "db2 GET DB CFG FOR $2" - db2inst1
+					return
+				fi;;
+			'db_update_cfg')
+				if [ -n "$2" ] && [ -n "$3" ] && [ -n "$4" ]; then
+					dockercontainer "exec" ${containername} su -c "db2 UPDATE DB CFG FOR $2 using $3 $4" - db2inst1
+					return
+				fi;;
+			'exec')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "${@:2:${#}}" - db2inst1
+					return
+				fi;;
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		dockerutil usage_display ${FUNCNAME[0]} "$(usage)"
+	fi
+}
+
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#Functions
+usage() {
+	# @description organize usages
+	# @output string output of usages, formatted
+	
+	local usage_arr=(
+		"$(dockertemplate template_usage)"
+		"Usage: \${FUNCNAME[0]} (db_create|db_drop|db_get_cfg) <database-name>"
+		"Usage: \${FUNCNAME[0]} db_update_cfg <database-name> <param-name> <param-value>"
+	)
+	
+	dockerutil usage_display_formatted "${usage_arr[@]}"
+}
+
+#External Functions
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+dockertemplate() {
+	# @description reference dockertemplate to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockertemplate"
+		return 1
+	fi
+}
+
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		"${scriptpath}" "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	if [ "${LDT_DEBUG}" == "1" ]; then
+		verify_external_functions
+	fi
+
+	dockerdb2 "${@}"
+
+	exit $?
+fi
