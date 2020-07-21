@@ -5,10 +5,10 @@
 # port: 443 (configured via -p 443:443)
 # reverse proxy:
 #    ProxyPass properties in ./conf/extra/httpd-vhosts.conf:
-#        ProxyPass /liferay http://host.docker.internal:8080
-#        ProxyPassReverse /liferay http://host.docker.internal:8080
+#        ProxyPass /liferay ajp://172.17.0.1:8009 
+#        ProxyPassReverse /liferay ajp://172.17.0.1:8009
 #
-#        (by default, host.docker.internal should route to your localhost)
+#        (by default, 172.17.0.1 should route to your localhost:8009)
 #    For Liferay, add the following portal properties (modify accordingly):
 #        web.server.https.port=443
 #        web.server.protocol=https
@@ -41,6 +41,26 @@ dockerapache_proxypass() {
 		"-v ${scriptpath_escaped}/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
 		"-p 443:443"
 	)
+
+	# Append: containeroptions
+	#
+	# Linux does not have an automatic DNS entry: host.docker.internal that links to the HOST
+	# This manually adds the entry to the container via --add-host
+	# This also assumes the default bridge: 'bridge' that is pre-configured by docker is being used
+	#
+	if [ $(echo "${OSTYPE}" | grep -E "^linux*") ]; then
+		local docker0_ip_address=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')
+
+		if [ -n "${docker0_ip_address}" ]; then
+			containeroptions=(
+				"${containeroptions[@]}"
+				"--add-host=host.docker.internal:${docker0_ip_address}"
+			)
+		else
+			echo "Error: Could not retrieve IP address for docker host IP address, needed for Linux."
+			return 1
+		fi
+	fi
 
 	if [ -n "$1" ]; then
 		case "$1" in
